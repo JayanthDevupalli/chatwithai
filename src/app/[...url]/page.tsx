@@ -4,7 +4,7 @@ import { ChatWrapper } from "@/components/ChatWrapper";
 
 interface pageProps{
     params:{
-        url:string | string[] 
+        url:string | string[] | undefined
     }
 }
 
@@ -31,7 +31,7 @@ const page = async ({params}: pageProps) =>{
         await redis.sadd("indexed-urls",reconstructedUrl)
     }
 
-    return <ChatWrapper sessionId={sessionId} />
+    return <ChatWrapper sessionId={sessionId}/>
 }
 
 export default page;
