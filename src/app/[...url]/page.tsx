@@ -15,8 +15,6 @@ function reconstructUrl({url}: {url: string[]}){
 
 const page = async ({params}: pageProps) =>{
     const reconstructedUrl = reconstructUrl({url: params.url as string[]})
-
-    //console.log(params.url);
     const isAlreadyIndexed = await redis.sismember("indexed-urls", reconstructedUrl)
 
     const sessionId = "mock-session"
