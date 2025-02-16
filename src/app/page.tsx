@@ -107,7 +107,7 @@ export default function Home() {
     try {
       new URL(url) // Check if URL constructor can parse it
       return true
-    } catch (_) {
+    } catch (error) {
       return false
     }
   }
