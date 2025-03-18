@@ -33,8 +33,6 @@
 // }
 
 // export default page;
-
-
 import { ragChat } from "@/lib/rag-chat";
 import { redis } from "@/lib/redis";
 import { ChatWrapper } from "@/components/ChatWrapper";
