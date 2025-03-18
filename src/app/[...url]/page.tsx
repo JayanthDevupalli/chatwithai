@@ -34,48 +34,46 @@
 
 // export default page;
 
+
 import { ragChat } from "@/lib/rag-chat";
 import { redis } from "@/lib/redis";
 import { ChatWrapper } from "@/components/ChatWrapper";
-import { v4 as uuidv4 } from 'uuid';
-import { JSX } from 'react';
+import { Message } from "ai/react"; // Import the Message type
 
-interface PageProps {
+interface pageProps {
     params: {
         url: string | string[] | undefined;
     };
 }
 
-function reconstructUrl({ url }: { url: string | string[] | undefined }): string {
-    if (!url) return ""; // Handle undefined case
+function reconstructUrl({ url }: { url: string | string[] | undefined }) {
+    if (!url) return "";
     const decodedComponents = Array.isArray(url)
         ? url.map((component) => decodeURIComponent(component))
-        : [decodeURIComponent(url)]; // Handle string case
+        : [decodeURIComponent(url)];
     return decodedComponents.join("/");
 }
 
-const page = async ({ params }: PageProps): Promise<JSX.Element> => {
-    const reconstructedUrl = reconstructUrl({ url: params.url });
+const page = async ({ params }: pageProps) => {
+    const reconstructedUrl = reconstructUrl({ url: params.url as string[] });
+    const isAlreadyIndexed = await redis.sismember("indexed-urls", reconstructedUrl);
 
-    const isAlreadyIndexed = (await redis.sismember("indexed-urls", reconstructedUrl)) === 1;
+    const sessionId = "mock-session";
 
-    const sessionId = uuidv4(); // Using UUID for a unique session ID
+    if (!isAlreadyIndexed) {
+        await ragChat.context.add({
+            type: "html",
+            source: reconstructedUrl,
+            config: { chunkOverlap: 50, chunkSize: 100 },
+        });
 
-    try {
-        if (!isAlreadyIndexed) {
-            await ragChat.context.add({
-                type: "html",
-                source: reconstructedUrl,
-                config: { chunkOverlap: 50, chunkSize: 100 },
-            });
-
-            await redis.sadd("indexed-urls", reconstructedUrl);
-        }
-    } catch (error) {
-        console.error("Error adding context or updating Redis:", error);
+        await redis.sadd("indexed-urls", reconstructedUrl);
     }
 
-    return <ChatWrapper sessionId={sessionId} />;
+    // Add initialMessages (empty array if no data available)
+    const initialMessages: Message[] = [];  // Placeholder — replace with actual data if needed
+
+    return <ChatWrapper sessionId={sessionId} initialMessages={initialMessages} />;
 };
 
 export default page;
